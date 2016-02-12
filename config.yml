@@ -129,8 +129,13 @@ extra_packages:
   - unzip
 
 # `nodejs` must be in installed_extras for this to work.
-nodejs_version: "0.12"
-nodejs_npm_global_packages: []
+nodejs_version: "4.3"
+#nodejs_npm_global_packages: []
+nodejs_npm_global_packages: 
+  - name: yo
+  - name: bower
+  - name: grunt-cli
+  - name: generator-express-simple
 
 # `ruby` must be in installed_extras for this to work.
 ruby_install_gems: []
