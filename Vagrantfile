@@ -6,7 +6,7 @@ require 'yaml'
 VAGRANTFILE_API_VERSION = "2"
 
 # Way to Check if needed plugins are installed.
-def is_plugin(name)
+def check_plugin_installed(name)
   if !Vagrant.has_plugin?(name)
     puts "plugin missing #{name}"
     puts "please run \"vagrant plugin install #{name}\""
@@ -27,8 +27,8 @@ def which(cmd)
 end
 
 # plugins check
-is_plugin("vagrant-auto_network")
-is_plugin("vagrant-hostsupdater")
+check_plugin_installed("vagrant-auto_network")
+check_plugin_installed("vagrant-hostsupdater")
 
 # Use config.yml for basic VM configuration.
 dir = File.dirname(File.expand_path(__FILE__))
