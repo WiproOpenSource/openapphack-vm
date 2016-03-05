@@ -1,6 +1,18 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+#vagrant plugins required:
+#vagrant-auto_network, vagrant-hostsupdater
+require 'yaml'
 VAGRANTFILE_API_VERSION = "2"
+
+# Way to Check if needed plugins are installed.
+def is_plugin(name)
+  if !Vagrant.has_plugin?(name)
+    puts "plugin missing #{name}"
+    puts "please run \"vagrant plugin install #{name}\""
+    exit(1)
+  end
+end
 
 # Cross-platform way of finding an executable in the $PATH.
 def which(cmd)
@@ -14,8 +26,11 @@ def which(cmd)
   return nil
 end
 
+# plugins check
+is_plugin("vagrant-auto_network")
+is_plugin("vagrant-hostsupdater")
+
 # Use config.yml for basic VM configuration.
-require 'yaml'
 dir = File.dirname(File.expand_path(__FILE__))
 if !File.exist?("#{dir}/config.yml")
   raise 'Configuration file not found! Please copy example.config.yml to config.yml and try again.'
@@ -24,7 +39,7 @@ vconfig = YAML::load_file("#{dir}/config.yml")
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = vconfig['vagrant_hostname']
-  if vconfig['vagrant_ip'] == "0.0.0.0" && Vagrant.has_plugin?("vagrant-auto_network")
+  if vconfig['vagrant_ip'] == "0.0.0.0"
     config.vm.network :private_network, :ip => vconfig['vagrant_ip'], :auto_network => true
   else
     config.vm.network :private_network, ip: vconfig['vagrant_ip']
@@ -41,21 +56,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.box = vconfig['vagrant_box']
 
-  # If hostsupdater plugin is installed, add all server names as aliases.
-  if Vagrant.has_plugin?("vagrant-hostsupdater")
-    config.hostsupdater.aliases = []
-    # Add all hosts that aren't defined as Ansible vars.
-    if vconfig['openapphackvm_webserver'] == "apache"
-      for host in vconfig['apache_vhosts']
-        unless host['servername'].include? "{{"
-          config.hostsupdater.aliases.push(host['servername'])
-        end
+  # Add all server names as aliases.
+  config.hostsupdater.aliases = []
+  # Add all hosts that aren't defined as Ansible vars.
+  if vconfig['openapphackvm_webserver'] == "apache"
+    for host in vconfig['apache_vhosts']
+      unless host['servername'].include? "{{"
+        config.hostsupdater.aliases.push(host['servername'])
       end
-    else
-      for host in vconfig['nginx_hosts']
-        unless host['server_name'].include? "{{"
-          config.hostsupdater.aliases.push(host['server_name'])
-        end
+    end
+  else
+    for host in vconfig['nginx_hosts']
+      unless host['server_name'].include? "{{"
+        config.hostsupdater.aliases.push(host['server_name'])
       end
     end
   end
