@@ -24,3 +24,4 @@
 - src: openapphack.security
 - src: openapphack.solr
 - src: openapphack.varnish
+- src: openapphack.maven
